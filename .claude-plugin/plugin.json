@@ -1,0 +1,23 @@
+{
+  "name": "interflect",
+  "version": "0.1.0",
+  "description": "Retrospective compounding plugin/lane. Mines prior sessions for lessons and emits reviewable promotion proposals to memory, skills, docs/canon, Beads, or routing overlays.",
+  "author": {
+    "name": "MK",
+    "email": "mistakeknot@vibeguider.org"
+  },
+  "repository": "https://github.com/mistakeknot/interflect",
+  "homepage": "https://github.com/mistakeknot/interflect#readme",
+  "license": "MIT",
+  "keywords": [
+    "reflection",
+    "retrospective-compounding",
+    "agent-memory",
+    "promotion-proposals",
+    "interverse"
+  ],
+  "commands": [
+    "./commands/interflect.md",
+    "./commands/interflect-review.md"
+  ]
+}
