@@ -112,3 +112,69 @@ def test_cli_review_updates_existing_proposal_state(tmp_path):
     assert stored["final_target"] == "skill_patch"
     assert stored["review_rationale"] == "Reusable Oracle review procedure pitfall."
     assert json.loads(result.stdout)["review_decision"] == "reclassified"
+
+
+def test_cli_extract_emits_candidates_from_session_summaries(tmp_path):
+    source = Path(__file__).parent / "fixtures" / "session_summaries.jsonl"
+    output = tmp_path / "candidates.jsonl"
+
+    env = os.environ.copy()
+    src_path = str(Path(__file__).resolve().parents[1] / "src")
+    env["PYTHONPATH"] = src_path + os.pathsep + env.get("PYTHONPATH", "")
+
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "interflect.cli",
+            "extract",
+            "--session-jsonl",
+            str(source),
+            "--output-jsonl",
+            str(output),
+        ],
+        text=True,
+        capture_output=True,
+        check=True,
+        env=env,
+    )
+
+    rows = [json.loads(line) for line in output.read_text().splitlines() if line.strip()]
+    assert len(rows) == 9
+    assert rows[0]["source_handle"].startswith("session_search:20260503_070215_236908cc")
+    assert rows[0]["claim"] == "Interflect is the active project identity, not Interspect."
+
+
+def test_cli_extract_can_feed_proposals_and_cards(tmp_path):
+    source = Path(__file__).parent / "fixtures" / "session_summaries.jsonl"
+    store = tmp_path / "proposals.jsonl"
+
+    env = os.environ.copy()
+    src_path = str(Path(__file__).resolve().parents[1] / "src")
+    env["PYTHONPATH"] = src_path + os.pathsep + env.get("PYTHONPATH", "")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "interflect.cli",
+            "extract",
+            "--session-jsonl",
+            str(source),
+            "--store",
+            str(store),
+            "--cards",
+            "--session",
+            "20260503_followup",
+        ],
+        text=True,
+        capture_output=True,
+        check=True,
+        env=env,
+    )
+
+    stored = [json.loads(line) for line in store.read_text().splitlines() if line.strip()]
+    assert len(stored) == 1
+    assert stored[0]["target"] == "beads_followup"
+    assert "Interflect proposal" in result.stdout
+    assert "Target: beads_followup" in result.stdout

@@ -24,6 +24,16 @@ Beads notes, or repo handoffs for lessons that should be reviewed for promotion.
 
 ## Local CLI
 
+Extract candidates from session-search-style summaries:
+
+```bash
+interflect extract \
+  --session-jsonl tests/fixtures/session_summaries.jsonl \
+  --output-jsonl .interflect/candidates.jsonl
+```
+
+Analyze explicit candidates:
+
 ```bash
 interflect analyze \
   --input-jsonl tests/fixtures/lessons.jsonl \

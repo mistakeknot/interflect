@@ -19,6 +19,9 @@ routing overlays.
 
 ```bash
 python3 -m pytest tests -q
+PYTHONPATH=src python3 -m interflect.cli extract \
+  --session-jsonl tests/fixtures/session_summaries.jsonl \
+  --output-jsonl /tmp/interflect-candidates.jsonl
 PYTHONPATH=src python3 -m interflect.cli analyze \
   --input-jsonl tests/fixtures/lessons.jsonl \
   --store /tmp/interflect-proposals.jsonl \

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from .proposals import ProposalQueue, candidates_from_jsonl, render_review_cards
+from .sources import candidates_from_session_summaries
 from .taxonomy import PromotionTarget
 
 
@@ -27,6 +28,13 @@ def build_parser() -> argparse.ArgumentParser:
     review.add_argument("--final-target", choices=[target.value for target in PromotionTarget], help="Reviewed final target")
     review.add_argument("--rationale", default="", help="Human review rationale")
     review.add_argument("--reviewed-at", default=None, help="ISO timestamp for deterministic/imported reviews")
+
+    extract = sub.add_parser("extract", help="Extract lesson candidates from session_search/CASS-style summaries")
+    extract.add_argument("--session-jsonl", required=True, help="JSONL session summary export")
+    extract.add_argument("--output-jsonl", help="Write extracted LessonCandidate JSONL instead of stdout")
+    extract.add_argument("--store", help="Optional proposal queue path; when set, extracted candidates are analyzed into proposals")
+    extract.add_argument("--session", action="append", default=[], help="Filter to explicit source_session values")
+    extract.add_argument("--cards", action="store_true", help="With --store, render review cards for touched proposals")
     return parser
 
 
@@ -65,6 +73,38 @@ def review(args: argparse.Namespace) -> int:
     return 0
 
 
+def extract(args: argparse.Namespace) -> int:
+    session_filter = set(args.session)
+    candidates = [
+        candidate for candidate in candidates_from_session_summaries(args.session_jsonl)
+        if not session_filter or candidate.source_session in session_filter
+    ]
+
+    if args.store:
+        queue = ProposalQueue(Path(args.store))
+        touched = [queue.add(candidate) for candidate in candidates]
+        if args.cards:
+            print(render_review_cards(touched))
+        else:
+            print(json.dumps({
+                "store": args.store,
+                "candidates_seen": len(candidates),
+                "proposals_seen": len(touched),
+                "sessions": args.session,
+            }, indent=2))
+        return 0
+
+    lines = [json.dumps(candidate.__dict__, ensure_ascii=False, separators=(",", ":")) for candidate in candidates]
+    output = "\n".join(lines) + ("\n" if lines else "")
+    if args.output_jsonl:
+        output_path = Path(args.output_jsonl)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(output)
+    else:
+        print(output, end="")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -72,6 +112,8 @@ def main(argv: list[str] | None = None) -> int:
         return analyze(args)
     if args.command == "review":
         return review(args)
+    if args.command == "extract":
+        return extract(args)
     parser.error(f"unknown command {args.command}")
     return 2
 
