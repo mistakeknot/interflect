@@ -4,7 +4,9 @@ import argparse
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import sys
 
+from .appliers import ApplyRefusal, apply_reviewed_proposal, load_jsonl_records
 from .proposals import ProposalQueue, candidates_from_jsonl, render_review_cards
 from .sources import candidates_from_session_summaries
 from .taxonomy import PromotionTarget
@@ -35,6 +37,13 @@ def build_parser() -> argparse.ArgumentParser:
     extract.add_argument("--store", help="Optional proposal queue path; when set, extracted candidates are analyzed into proposals")
     extract.add_argument("--session", action="append", default=[], help="Filter to explicit source_session values")
     extract.add_argument("--cards", action="store_true", help="With --store, render review cards for touched proposals")
+
+    apply_cmd = sub.add_parser("apply", help="Emit reviewed safe-applier draft artifacts without target mutation")
+    apply_cmd.add_argument("--store", default=".interflect/proposals.jsonl", help="Proposal queue JSONL path")
+    apply_cmd.add_argument("--proposal-id", required=True, help="Reviewed proposal idempotency key to draft")
+    apply_cmd.add_argument("--artifact-dir", default=".interflect/apply-drafts", help="Directory for dry-run artifacts")
+    apply_cmd.add_argument("--existing-beads-jsonl", help="Optional JSONL Beads export/search corpus for duplicate detection")
+    apply_cmd.add_argument("--patch-target", help="Optional intended skill/doc file path for patch artifact context")
     return parser
 
 
@@ -105,6 +114,30 @@ def extract(args: argparse.Namespace) -> int:
     return 0
 
 
+def apply(args: argparse.Namespace) -> int:
+    queue = ProposalQueue(Path(args.store))
+    proposals = {proposal.idempotency_key: proposal for proposal in queue.load()}
+    proposal = proposals.get(args.proposal_id)
+    if proposal is None:
+        print(f"proposal not found: {args.proposal_id}", file=sys.stderr)
+        return 1
+
+    existing_beads = load_jsonl_records(args.existing_beads_jsonl) if args.existing_beads_jsonl else []
+    try:
+        draft = apply_reviewed_proposal(
+            proposal,
+            artifact_dir=args.artifact_dir,
+            existing_beads=existing_beads,
+            patch_target=args.patch_target,
+        )
+    except ApplyRefusal as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+
+    print(json.dumps(draft.to_json(), ensure_ascii=False, indent=2))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -114,6 +147,8 @@ def main(argv: list[str] | None = None) -> int:
         return review(args)
     if args.command == "extract":
         return extract(args)
+    if args.command == "apply":
+        return apply(args)
     parser.error(f"unknown command {args.command}")
     return 2
 

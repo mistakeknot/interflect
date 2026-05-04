@@ -19,8 +19,9 @@ Beads notes, or repo handoffs for lessons that should be reviewed for promotion.
    - `routing_signal`
    - `runtime_only`
 4. Emit review cards and/or JSONL proposals.
-5. Stop. Do not apply memory, skill, canon, Beads, or routing mutations unless the
-   operator explicitly invokes a reviewed apply path.
+5. Stop. Do not apply memory, skill, canon, Beads, or routing mutations. If the
+   operator explicitly invokes a reviewed apply path, emit only dry-run artifacts
+   or explicit-approval stubs.
 
 ## Local CLI
 
@@ -39,6 +40,16 @@ interflect analyze \
   --input-jsonl tests/fixtures/lessons.jsonl \
   --store .interflect/proposals.jsonl \
   --cards
+```
+
+Emit a reviewed dry-run apply artifact:
+
+```bash
+interflect apply \
+  --store .interflect/proposals.jsonl \
+  --proposal-id <reviewed-idempotency-key> \
+  --artifact-dir .interflect/apply-drafts \
+  --existing-beads-jsonl /path/to/issues.jsonl
 ```
 
 ## Output contract

@@ -18,6 +18,7 @@
   ],
   "commands": [
     "./commands/interflect.md",
-    "./commands/interflect-review.md"
+    "./commands/interflect-review.md",
+    "./commands/interflect-apply.md"
   ]
 }

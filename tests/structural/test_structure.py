@@ -12,6 +12,7 @@ def test_plugin_manifest_declares_interflect_commands_and_metadata():
     assert "retrospective" in manifest["description"].lower()
     assert "./commands/interflect.md" in manifest["commands"]
     assert "./commands/interflect-review.md" in manifest["commands"]
+    assert "./commands/interflect-apply.md" in manifest["commands"]
     assert manifest["repository"] == "https://github.com/mistakeknot/interflect"
 
 
@@ -23,6 +24,7 @@ def test_required_docs_and_command_surfaces_exist():
         "PHILOSOPHY.md",
         "commands/interflect.md",
         "commands/interflect-review.md",
+        "commands/interflect-apply.md",
     ]:
         assert (ROOT / rel).exists(), rel
 

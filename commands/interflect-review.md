@@ -27,7 +27,9 @@ For each proposal:
      --rationale "Reusable procedure, not routing evidence."
    ```
 
-5. Apply only with an explicit operator-approved apply path.
+5. Apply only with an explicit operator-approved apply path. Current v0 apply
+   paths emit dry-run artifacts or explicit-approval stubs; they do not mutate
+   targets directly.
 
 ## Guardrail
 

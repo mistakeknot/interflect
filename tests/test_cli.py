@@ -178,3 +178,133 @@ def test_cli_extract_can_feed_proposals_and_cards(tmp_path):
     assert stored[0]["target"] == "beads_followup"
     assert "Interflect proposal" in result.stdout
     assert "Target: beads_followup" in result.stdout
+
+
+def test_cli_apply_refuses_unreviewed_proposals(tmp_path):
+    source = tmp_path / "lessons.jsonl"
+    store = tmp_path / "proposals.jsonl"
+    source.write_text(json.dumps({
+        "source_session": "sess-followup",
+        "source_handle": "session:todo",
+        "source_snippet": "create a follow-up bead",
+        "claim": "Create a Beads follow-up for Interflect safe applier UX.",
+    }) + "\n")
+
+    env = os.environ.copy()
+    src_path = str(Path(__file__).resolve().parents[1] / "src")
+    env["PYTHONPATH"] = src_path + os.pathsep + env.get("PYTHONPATH", "")
+
+    subprocess.run(
+        [sys.executable, "-m", "interflect.cli", "analyze", "--input-jsonl", str(source), "--store", str(store)],
+        text=True,
+        capture_output=True,
+        check=True,
+        env=env,
+    )
+    proposal_id = json.loads(store.read_text().strip())["idempotency_key"]
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "interflect.cli",
+            "apply",
+            "--store",
+            str(store),
+            "--proposal-id",
+            proposal_id,
+            "--artifact-dir",
+            str(tmp_path / "artifacts"),
+        ],
+        text=True,
+        capture_output=True,
+        env=env,
+    )
+
+    assert result.returncode == 1
+    assert "reviewed" in result.stderr
+    assert not (tmp_path / "artifacts").exists()
+
+
+def test_cli_apply_writes_dry_run_beads_draft_for_reviewed_proposal(tmp_path):
+    source = tmp_path / "lessons.jsonl"
+    store = tmp_path / "proposals.jsonl"
+    existing = tmp_path / "existing-beads.jsonl"
+    source.write_text(json.dumps({
+        "source_session": "sess-followup",
+        "source_handle": "session:todo",
+        "source_snippet": "create a follow-up bead",
+        "claim": "Create a Beads follow-up for Interflect safe applier UX.",
+    }) + "\n")
+    existing.write_text(json.dumps({
+        "id": "sylveste-dupe",
+        "title": "Interflect safe applier UX follow-up",
+        "description": "Draft Beads creation should search duplicates first.",
+        "status": "open",
+    }) + "\n")
+
+    env = os.environ.copy()
+    src_path = str(Path(__file__).resolve().parents[1] / "src")
+    env["PYTHONPATH"] = src_path + os.pathsep + env.get("PYTHONPATH", "")
+
+    subprocess.run(
+        [sys.executable, "-m", "interflect.cli", "analyze", "--input-jsonl", str(source), "--store", str(store)],
+        text=True,
+        capture_output=True,
+        check=True,
+        env=env,
+    )
+    proposal_id = json.loads(store.read_text().strip())["idempotency_key"]
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "interflect.cli",
+            "review",
+            "--store",
+            str(store),
+            "--proposal-id",
+            proposal_id,
+            "--decision",
+            "accepted",
+            "--final-target",
+            "beads_followup",
+            "--rationale",
+            "track implementation follow-up",
+            "--reviewed-at",
+            "2026-05-04T15:10:00Z",
+        ],
+        text=True,
+        capture_output=True,
+        check=True,
+        env=env,
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "interflect.cli",
+            "apply",
+            "--store",
+            str(store),
+            "--proposal-id",
+            proposal_id,
+            "--artifact-dir",
+            str(tmp_path / "artifacts"),
+            "--existing-beads-jsonl",
+            str(existing),
+        ],
+        text=True,
+        capture_output=True,
+        check=True,
+        env=env,
+    )
+
+    summary = json.loads(result.stdout)
+    artifact = Path(summary["artifact_path"])
+    assert summary["mutation_applied"] is False
+    assert summary["target"] == "beads_followup"
+    assert artifact.exists()
+    assert "sylveste-dupe" in artifact.read_text()
+    assert "No Beads mutation has been applied" in artifact.read_text()

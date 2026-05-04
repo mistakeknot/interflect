@@ -12,8 +12,9 @@ Interflect is distinct from Interspect:
 
 ## v0 posture
 
-v0 is proposal-only. It does not silently mutate memory, canon, skills, Beads, or
-routing overlays.
+v0 is proposal-first. Analysis does not silently mutate memory, canon, skills,
+Beads, or routing overlays. The only apply path emits reviewed dry-run artifacts
+or explicit-approval stubs; it does not perform target mutations.
 
 ## Quick start
 
@@ -32,6 +33,11 @@ PYTHONPATH=src python3 -m interflect.cli review \
   --decision reclassified \
   --final-target skill_patch \
   --rationale "Reusable procedure, not routing evidence."
+PYTHONPATH=src python3 -m interflect.cli apply \
+  --store /tmp/interflect-proposals.jsonl \
+  --proposal-id <reviewed-idempotency-key> \
+  --artifact-dir /tmp/interflect-apply-drafts \
+  --existing-beads-jsonl /home/mk/projects/Sylveste/.beads/issues.jsonl
 ```
 
 ## Promotion taxonomy
