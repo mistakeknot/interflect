@@ -23,6 +23,12 @@ PYTHONPATH=src python3 -m interflect.cli analyze \
   --input-jsonl tests/fixtures/lessons.jsonl \
   --store /tmp/interflect-proposals.jsonl \
   --cards
+PYTHONPATH=src python3 -m interflect.cli review \
+  --store /tmp/interflect-proposals.jsonl \
+  --proposal-id <idempotency-key> \
+  --decision reclassified \
+  --final-target skill_patch \
+  --rationale "Reusable procedure, not routing evidence."
 ```
 
 ## Promotion taxonomy

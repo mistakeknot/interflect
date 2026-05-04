@@ -17,6 +17,12 @@ PYTHONPATH=src python3 -m interflect.cli analyze \
   --input-jsonl tests/fixtures/lessons.jsonl \
   --store /tmp/interflect-proposals.jsonl \
   --cards
+PYTHONPATH=src python3 -m interflect.cli review \
+  --store /tmp/interflect-proposals.jsonl \
+  --proposal-id <idempotency-key> \
+  --decision accepted \
+  --final-target repo_doctrine \
+  --rationale "Source supports the target."
 python3 -c "import json; json.load(open('.claude-plugin/plugin.json'))"
 ```
 
@@ -27,7 +33,7 @@ python3 -c "import json; json.load(open('.claude-plugin/plugin.json'))"
 - `src/interflect/cli.py` — manual bounded analysis command.
 - `commands/interflect.md` — Claude command guidance for proposal-only analysis.
 - `commands/interflect-review.md` — review boundary guidance.
-- `tests/fixtures/lessons.jsonl` — 20 deterministic taxonomy examples.
+- `tests/fixtures/lessons.jsonl` — 27 deterministic taxonomy examples, including real-session dogfood regressions.
 
 ## Design decisions
 

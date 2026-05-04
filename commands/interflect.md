@@ -42,6 +42,6 @@ Every proposal must include:
 - confidence
 - rationale
 - idempotency key
-- status `proposed`
+- status `proposed`, then review state (`review_decision`, `final_target`, `review_rationale`, `reviewed_at`) once reviewed
 
 No automatic mutation has been applied.

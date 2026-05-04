@@ -16,7 +16,18 @@ For each proposal:
    - routing signal for Interspect/overlay evidence;
    - runtime-only for transient state that should not be promoted.
 3. Accept, reject, or reclassify.
-4. Apply only with an explicit operator-approved apply path.
+4. Persist the review outcome on the proposal queue before any apply step:
+
+   ```bash
+   interflect review \
+     --store .interflect/proposals.jsonl \
+     --proposal-id <idempotency-key> \
+     --decision reclassified \
+     --final-target skill_patch \
+     --rationale "Reusable procedure, not routing evidence."
+   ```
+
+5. Apply only with an explicit operator-approved apply path.
 
 ## Guardrail
 
