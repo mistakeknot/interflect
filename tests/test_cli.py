@@ -180,6 +180,45 @@ def test_cli_extract_can_feed_proposals_and_cards(tmp_path):
     assert "Target: beads_followup" in result.stdout
 
 
+def test_cli_extract_store_reports_candidate_count_and_target_distribution(tmp_path):
+    source = Path(__file__).parent / "fixtures" / "session_summaries.jsonl"
+    store = tmp_path / "proposals.jsonl"
+
+    env = os.environ.copy()
+    src_path = str(Path(__file__).resolve().parents[1] / "src")
+    env["PYTHONPATH"] = src_path + os.pathsep + env.get("PYTHONPATH", "")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "interflect.cli",
+            "extract",
+            "--session-jsonl",
+            str(source),
+            "--store",
+            str(store),
+        ],
+        text=True,
+        capture_output=True,
+        check=True,
+        env=env,
+    )
+
+    summary = json.loads(result.stdout)
+    assert summary["candidates_seen"] == 9
+    assert summary["proposals_seen"] == 9
+    assert summary["target_distribution"] == {
+        "beads_followup": 1,
+        "memory": 1,
+        "repo_doctrine": 3,
+        "routing_signal": 1,
+        "runtime_only": 1,
+        "skill_patch": 2,
+    }
+    assert summary["mutation_applied"] is False
+
+
 def test_cli_apply_refuses_unreviewed_proposals(tmp_path):
     source = tmp_path / "lessons.jsonl"
     store = tmp_path / "proposals.jsonl"

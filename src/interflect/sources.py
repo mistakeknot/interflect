@@ -42,6 +42,9 @@ def _record_from_json(obj: dict) -> SessionRecord:
     )
     title = str(obj.get("title") or obj.get("name") or "").strip()
     source_handle = str(obj.get("source_handle") or obj.get("handle") or f"session_search:{source_session} {title}".strip())
+    raw_locator = obj.get("permalink") or obj.get("url") or obj.get("source_url")
+    if raw_locator and str(raw_locator) not in source_handle:
+        source_handle = f"{source_handle} <{raw_locator}>"
     content_parts = [
         obj.get("summary"),
         obj.get("description"),

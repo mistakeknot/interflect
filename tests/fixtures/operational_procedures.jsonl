@@ -1,0 +1,4 @@
+{"session_id":"leave-queued","title":"Leave queued button","permalink":"discord://thread/leave-queued","summary":"When a user chooses Leave queued from Discord buttons, the agent should keep the Bead unclaimed and report the queue decision as a reusable workflow procedure."}
+{"session_id":"scheduled-check","title":"Scheduled Check audit","url":"cron://cron_9d343ae835e2","summary":"Scheduled Check jobs must emit candidates or reminders only; they must not apply memory, canon, skills, Beads, or routing mutations automatically."}
+{"session_id":"discord-boundary","title":"Discord visibility boundary","summary":"Discord-thread reports should state that the agent can only read directly delivered messages, not search channel history."}
+{"session_id":"customized-hermes-warning","title":"Hermes update warning","summary":"Hermes update warnings should preserve customized local workflow procedure caveats before recommending an upgrade or restart."}

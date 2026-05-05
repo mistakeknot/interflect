@@ -115,6 +115,12 @@ def classify_lesson(claim: str, source_snippet: str = "") -> Classification:
         "wrapper",
         "review-planning",
         "verdict taxonomy",
+        "leave queued",
+        "discord-thread reports",
+        "can only read directly delivered messages",
+        "search channel history",
+        "hermes update warnings",
+        "customized local workflow",
     )
     patch_skill_pattern = re.search(r"\bpatch\b.*\bskills?\b", text) or re.search(r"\bskills?\b.*\bpatch\b", text)
     if _has_any(text, skill_terms) or patch_skill_pattern:

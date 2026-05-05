@@ -19,9 +19,14 @@ Beads notes, or repo handoffs for lessons that should be reviewed for promotion.
    - `routing_signal`
    - `runtime_only`
 4. Emit review cards and/or JSONL proposals.
-5. Stop. Do not apply memory, skill, canon, Beads, or routing mutations. If the
+5. Print a bounded preview count and target distribution when emitting JSON.
+6. Stop. Do not apply memory, skill, canon, Beads, or routing mutations. If the
    operator explicitly invokes a reviewed apply path, emit only dry-run artifacts
    or explicit-approval stubs.
+
+Session-end or scheduled hooks may use this command only to export candidates or
+queue review reminders. Hooks must not run reviewed apply drafts automatically
+and must never mutate memory, skills, repo canon, Beads, or routing overlays.
 
 ## Local CLI
 
@@ -66,3 +71,7 @@ Every proposal must include:
 - status `proposed`, then review state (`review_decision`, `final_target`, `review_rationale`, `reviewed_at`) once reviewed
 
 No automatic mutation has been applied.
+
+JSON summaries also include `proposals_seen` / `candidates_seen`,
+`target_distribution`, and `mutation_applied: false` so operators can triage the
+batch before reading cards.

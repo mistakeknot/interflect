@@ -16,6 +16,10 @@ v0 is proposal-first. Analysis does not silently mutate memory, canon, skills,
 Beads, or routing overlays. The only apply path emits reviewed dry-run artifacts
 or explicit-approval stubs; it does not perform target mutations.
 
+Session-end or scheduled hooks may run only as candidate exporters or queued
+review reminders. They must not invoke `apply`, edit target files, update memory,
+create/claim/close Beads, or mutate routing/canon automatically.
+
 ## Quick start
 
 ```bash
@@ -23,6 +27,9 @@ python3 -m pytest tests -q
 PYTHONPATH=src python3 -m interflect.cli extract \
   --session-jsonl tests/fixtures/session_summaries.jsonl \
   --output-jsonl /tmp/interflect-candidates.jsonl
+PYTHONPATH=src python3 -m interflect.cli extract \
+  --session-jsonl tests/fixtures/session_summaries.jsonl \
+  --store /tmp/interflect-proposals.jsonl
 PYTHONPATH=src python3 -m interflect.cli analyze \
   --input-jsonl tests/fixtures/lessons.jsonl \
   --store /tmp/interflect-proposals.jsonl \

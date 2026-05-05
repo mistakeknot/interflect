@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 from interflect.sources import candidates_from_session_summaries, session_records_from_jsonl
@@ -48,3 +47,15 @@ def test_extracted_candidates_cover_taxonomy_targets_deterministically():
         "skill_patch",
         "beads_followup",
     ] + ["runtime_only"]
+
+
+def test_operational_procedure_edge_cases_extract_as_reviewable_skill_patches():
+    fixture = Path(__file__).parent / "fixtures" / "operational_procedures.jsonl"
+
+    candidates = list(candidates_from_session_summaries(fixture))
+    targets = [classify_lesson(candidate.claim, candidate.source_snippet).target.value for candidate in candidates]
+
+    assert len(candidates) == 4
+    assert targets == ["skill_patch", "repo_doctrine", "skill_patch", "skill_patch"]
+    assert "discord://thread/leave-queued" in candidates[0].source_handle
+    assert all(candidate.source_snippet for candidate in candidates)

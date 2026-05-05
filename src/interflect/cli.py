@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -10,6 +11,11 @@ from .appliers import ApplyRefusal, apply_reviewed_proposal, load_jsonl_records
 from .proposals import ProposalQueue, candidates_from_jsonl, render_review_cards
 from .sources import candidates_from_session_summaries
 from .taxonomy import PromotionTarget
+
+
+def _target_distribution(proposals) -> dict[str, int]:
+    counts = Counter(proposal.target.value for proposal in proposals)
+    return {target: counts[target] for target in sorted(counts)}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -62,6 +68,8 @@ def analyze(args: argparse.Namespace) -> int:
         print(json.dumps({
             "store": args.store,
             "proposals_seen": len(touched),
+            "target_distribution": _target_distribution(touched),
+            "mutation_applied": False,
             "sessions": args.session,
             "recent": args.recent,
         }, indent=2))
@@ -99,6 +107,8 @@ def extract(args: argparse.Namespace) -> int:
                 "store": args.store,
                 "candidates_seen": len(candidates),
                 "proposals_seen": len(touched),
+                "target_distribution": _target_distribution(touched),
+                "mutation_applied": False,
                 "sessions": args.session,
             }, indent=2))
         return 0

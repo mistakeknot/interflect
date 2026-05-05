@@ -45,6 +45,7 @@ python3 -c "import json; json.load(open('.claude-plugin/plugin.json'))"
 - `commands/interflect-apply.md` — reviewed safe-applier draft guidance.
 - `tests/fixtures/lessons.jsonl` — 27 deterministic taxonomy examples, including real-session dogfood regressions.
 - `tests/fixtures/session_summaries.jsonl` — session-search-style source adapter examples.
+- `tests/fixtures/operational_procedures.jsonl` — dogfood edge cases for `Leave queued`, scheduled `Check`, Discord visibility boundaries, and customized Hermes update warnings.
 
 ## Design decisions
 
@@ -56,3 +57,6 @@ python3 -c "import json; json.load(open('.claude-plugin/plugin.json'))"
 - Apply paths are review-gated draft emitters only: Beads drafts include duplicate
   candidates, skill/doc paths emit patch artifacts, memory/routing emit explicit-
   approval stubs with rollback text.
+- Session-end and scheduled hooks are candidate-export/reminder surfaces only;
+  they must not call reviewed apply paths or mutate memory, canon, skills,
+  Beads, or routing overlays automatically.
